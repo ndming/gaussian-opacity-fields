@@ -5,20 +5,21 @@ import GPUtil
 from concurrent.futures import ThreadPoolExecutor
 import time
 
+scene_dir = "/home/ndming/datasets/360_v2"
 scenes = ["bicycle", "bonsai", "counter", "flowers", "garden", "stump", "treehill", "kitchen", "room"]
 
 factors = [4, 2, 2, 4, 4, 4, 4, 2, 2]
 
 excluded_gpus = set([])
 
-output_dir = "exp_360/release"
+output_dir = "experiments/360_v2"
 
 dry_run = False
 
 jobs = list(zip(scenes, factors))
 
 def train_scene(gpu, scene, factor):
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s 360_v2/{scene} -m {output_dir}/{scene} --eval -i images_{factor} --port {6109+int(gpu)}"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/{scene} -m {output_dir}/{scene} --eval -i images_{factor} --port {6109+int(gpu)}"
     print(cmd)
     if not dry_run:
        os.system(cmd)

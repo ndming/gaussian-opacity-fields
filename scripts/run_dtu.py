@@ -5,20 +5,21 @@ import GPUtil
 from concurrent.futures import ThreadPoolExecutor
 import time
 
+scene_dir = "/home/ndming/datasets/DTU_2dgs"
 scenes = [24, 37, 40, 55, 63, 65, 69, 83, 97, 105, 106, 110, 114, 118, 122]
 
 factors = [2] * len(scenes)
 
 excluded_gpus = set([])
 
-output_dir = "exp_dtu/release"
+output_dir = "experiments/dtu"
 
 dry_run = False
 
 jobs = list(zip(scenes, factors))
 
 def train_scene(gpu, scene, factor):
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s DTU_mask/scan{scene} -m {output_dir}/scan{scene} -r {factor} --use_decoupled_appearance --lambda_distortion 1000"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/scan{scene} -m {output_dir}/scan{scene} -r {factor} --use_decoupled_appearance --lambda_distortion 1000"
     print(cmd)
     if not dry_run:
         os.system(cmd)

@@ -4,6 +4,7 @@ import GPUtil
 from concurrent.futures import ThreadPoolExecutor
 import time
 
+scene_dir = "/home/ndming/datasets/TNT_GOF"
 training_list = [
         'Barn', 'Caterpillar', 'Courthouse', 'Ignatius',
         'Meetingroom', 'Truck'
@@ -16,14 +17,14 @@ factors = [2] * len(scenes)
 
 excluded_gpus = set([])
 
-output_dir = "exp_TNT/release"
+output_dir = "experiments/tnt"
 
 dry_run = False
 
 jobs = list(zip(scenes, factors))
 
 def train_scene(gpu, scene, factor):
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s TNT_GOF/{split}/{scene} -m {output_dir}/{scene} --eval -r {factor} --use_decoupled_appearance"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/{split}/{scene} -m {output_dir}/{scene} --eval -r {factor} --use_decoupled_appearance"
     print(cmd)
     if not dry_run:
         os.system(cmd)
@@ -36,7 +37,7 @@ def train_scene(gpu, scene, factor):
     
     # evaluation
     # You need to install open3d==0.9 for evaluation
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python eval_tnt/run.py --dataset-dir eval_tnt/TrainingSet/{scene} --traj-path TNT_GOF/TrainingSet/{scene}/{scene}_COLMAP_SfM.log --ply-path {output_dir}/{scene}/test/ours_30000/fusion/mesh_binary_search_7.ply"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python eval_tnt/run.py --dataset-dir eval_tnt/TrainingSet/{scene} --traj-path {scene_dir}/TrainingSet/{scene}/{scene}_COLMAP_SfM.log --ply-path {output_dir}/{scene}/test/ours_30000/fusion/mesh_binary_search_7.ply"
     
     print(cmd)
     if not dry_run:

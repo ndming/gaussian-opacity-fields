@@ -1,50 +1,55 @@
-# training scripts for the nerf-synthetic datasets
+# training script for ZEISS dataset
+
 import os
 import GPUtil
 from concurrent.futures import ThreadPoolExecutor
 import time
-import itertools
 
-scenes = ["drums", "ship", "ficus", "hotdog", "lego", "materials", "mic", "chair"]
+scene_dir = "/home/ndming/datasets/ZEISS"
+scenes = ["brain-bg"]
 
-factors = [1]
-
-output_dir = "experiments/nerf_synthetic_decoupled"
-
-dataset_dir = "/home/ndming/datasets/nerf_synthetic"
-
-dry_run = False
+factors = [2] * len(scenes)
 
 excluded_gpus = set([])
 
+output_dir = "experiments/zeiss_eval"
 
-jobs = list(itertools.product(scenes, factors))
+dry_run = False
+
+jobs = list(zip(scenes, factors))
 
 def train_scene(gpu, scene, factor):
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {dataset_dir}/{scene} -m {output_dir}/{scene} --eval --use_decoupled_appearance --white_background --port {6209+int(gpu)}"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/{scene} -m {output_dir}/{scene} -r {factor} --eval --use_decoupled_appearance --lambda_distortion 1000"
     print(cmd)
     if not dry_run:
         os.system(cmd)
-
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python render.py -m {output_dir}/{scene} --skip_train"
-    print(cmd)
-    if not dry_run:
-        os.system(cmd)
-        
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python metrics.py -m {output_dir}/{scene}"
-    print(cmd)
-    if not dry_run:
-        os.system(cmd)
+    
+    # # marching tetrahedra with binary search
+    # cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python extract_mesh.py -m {output_dir}/{scene} --iteration 30000"
+    # print(cmd)
+    # if not dry_run:
+    #     os.system(cmd)
+    
+    # # tsdf fusion
+    # cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python extract_mesh_tsdf.py -m {output_dir}/{scene} --iteration 30000"
+    # print(cmd)
+    # if not dry_run:
+    #     os.system(cmd)
+    
+    # evaluate
+    # cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python evaluate_dtu_mesh.py -m {output_dir}/{scene} --iteration 30000"
+    # print(cmd)
+    # if not dry_run:
+    #     os.system(cmd)
     
     return True
 
-    
+
 def worker(gpu, scene, factor):
     print(f"Starting job on GPU {gpu} with scene {scene}\n")
     train_scene(gpu, scene, factor)
     print(f"Finished job on GPU {gpu} with scene {scene}\n")
     # This worker function starts a job and returns when it's done.
-    
     
 def dispatch_jobs(jobs, executor):
     future_to_job = {}
@@ -52,9 +57,10 @@ def dispatch_jobs(jobs, executor):
 
     while jobs or future_to_job:
         # Get the list of available GPUs, not including those that are reserved.
-        all_available_gpus = set(GPUtil.getAvailable(order="first", limit=10, maxMemory=0.5, maxLoad=0.5))
+        all_available_gpus = set(GPUtil.getAvailable(order="first", limit=10, excludeID=[]))
+        # all_available_gpus = set([0,1,2,3])
         available_gpus = list(all_available_gpus - reserved_gpus - excluded_gpus)
-
+        
         # Launch new jobs on available GPUs
         while available_gpus and jobs:
             gpu = available_gpus.pop(0)
