@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 scene_dir = "/home/zodnguy1/datasets/dtu"
-scenes = [24, 37, 40, 55, 63, 65, 69, 83, 97, 105, 106, 110, 114, 118, 122]
+scenes = [24, 37, 40]
 
 factors = [2] * len(scenes)
 
@@ -19,7 +19,7 @@ dry_run = False
 jobs = list(zip(scenes, factors))
 
 def train_scene(gpu, scene, factor):
-    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/scan{scene} -m {output_dir}/scan{scene} -r {factor} --use_decoupled_appearance --lambda_distortion 1000"
+    cmd = f"OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} python train.py -s {scene_dir}/scan{scene} -m {output_dir}/scan{scene} -r {factor} --use_decoupled_appearance --lambda_distortion 1000 --checkpoint_iterations 7000 30000"
     print(cmd)
     if not dry_run:
         os.system(cmd)
