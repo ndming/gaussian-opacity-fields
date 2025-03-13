@@ -19,10 +19,10 @@ dependencies:
   - plyfile=1.1
   - python=3.9
   - pip=22.3.1
-  - pytorch=1.12.1
+  - pytorch=1.13.0
   - pytorch-cuda=11.6
-  - torchaudio=0.12.1
-  - torchvision=0.13.1
+  - torchaudio=0.13.0
+  - torchvision=0.14.0
   - tqdm
   - trimesh=4.6.3
   - pip:

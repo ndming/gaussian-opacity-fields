@@ -52,6 +52,13 @@ def evaluate(model_paths, scale):
             per_view_dict_polytopeonly[scene_dir] = {}
 
             test_dir = Path(scene_dir) / "test"
+            if not test_dir.exists():
+                print("No test directory found for model", scene_dir)
+                test_dir = Path(scene_dir) / "train"
+                if test_dir.exists():
+                    print("Using train directory instead (evaluating on training views)")
+                else:
+                    raise FileNotFoundError("No test or train directory found for model", scene_dir)
 
             for method in os.listdir(test_dir):
                 print("Method:", method)
