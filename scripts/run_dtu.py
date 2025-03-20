@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 scene_dir = "/home/zodnguy1/datasets/dtu"
-scenes = [106, 118]
+scenes = [24, 37, 40, 55, 63, 65, 69, 83, 97, 105, 106, 110, 114, 118, 122]
 
 factors = [2] * len(scenes)
 
