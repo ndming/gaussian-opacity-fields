@@ -35,7 +35,7 @@ def readImages(renders_dir, gt_dir):
         image_names.append(fname)
     return renders, gts, image_names
 
-def evaluate(model_paths, scale):
+def evaluate(model_paths, scale, render_dir):
 
     full_dict = {}
     per_view_dict = {}
@@ -51,14 +51,9 @@ def evaluate(model_paths, scale):
             full_dict_polytopeonly[scene_dir] = {}
             per_view_dict_polytopeonly[scene_dir] = {}
 
-            test_dir = Path(scene_dir) / "test"
+            test_dir = Path(scene_dir) / render_dir
             if not test_dir.exists():
-                print("No test directory found for model", scene_dir)
-                test_dir = Path(scene_dir) / "train"
-                if test_dir.exists():
-                    print("Using train directory instead (evaluating on training views)")
-                else:
-                    raise FileNotFoundError("No test or train directory found for model", scene_dir)
+                raise FileNotFoundError("Could not find render dir at: ", test_dir)
 
             for method in os.listdir(test_dir):
                 print("Method:", method)
@@ -98,7 +93,8 @@ def evaluate(model_paths, scale):
                 json.dump(full_dict[scene_dir], fp, indent=True)
             with open(scene_dir + "/per_view.json", 'w') as fp:
                 json.dump(per_view_dict[scene_dir], fp, indent=True)
-        except:
+        except Exception as e:
+            print(f"Error: {e}")
             print("Unable to compute metrics for model", scene_dir)
 
 if __name__ == "__main__":
@@ -110,6 +106,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Training script parameters")
     parser.add_argument('--model_paths', '-m', required=True, nargs="+", type=str, default=[])
     parser.add_argument('--resolution', '-r', type=int, default=-1)
-    
+    parser.add_argument('--render_dir', '-d', type=str, default="test")
+
     args = parser.parse_args()
-    evaluate(args.model_paths, args.resolution)
+    evaluate(args.model_paths, args.resolution, args.render_dir)

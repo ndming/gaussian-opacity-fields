@@ -19,7 +19,7 @@ def tsdf_fusion(model_path, name, iteration, views, gaussians, pipeline, backgro
     makedirs(render_path, exist_ok=True)
     o3d_device = o3d.core.Device("CUDA:0")
     
-    voxel_size = 0.002
+    voxel_size = 0.01
     alpha_thres=0.5
     
     vbg = o3d.t.geometry.VoxelBlockGrid(
